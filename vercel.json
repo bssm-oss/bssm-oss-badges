@@ -4,13 +4,7 @@
       "runtime": "nodejs20.x"
     }
   },
-  "crons": [
-    {
-      "path": "/api/_warm",
-      "schedule": "*/30 * * * *"
-    }
-  ],
-  "headers": [
+"headers": [
     {
       "source": "/api/(.*).svg",
       "headers": [
