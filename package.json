@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "vercel dev",
-    "build": "tsc --noEmit",
+    "build": "tsc --noEmit && echo build ok",
     "lint": "biome check .",
     "format": "biome format --write .",
     "test": "vitest run",
