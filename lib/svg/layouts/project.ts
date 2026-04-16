@@ -1,5 +1,5 @@
 import { FONT_FAMILY, THEMES, getTheme, langColor } from "../theme.js";
-import { escape, langDot, rect, relativeTime, svgRoot, text, truncate } from "../primitives.js";
+import { langDot, rect, relativeTime, svgRoot, text, truncate } from "../primitives.js";
 import type { RepoInfo } from "../../types.js";
 
 const W = 400;
@@ -90,7 +90,7 @@ export function renderProject(
     ${text({
       x: 20,
       y: 76,
-      text: escape(desc),
+      text: desc,
       fill: t.textSecondary,
       fontSize: 13,
       fontFamily: FONT_FAMILY,

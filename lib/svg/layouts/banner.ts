@@ -1,5 +1,5 @@
 import { FONT_FAMILY, THEMES, getTheme } from "../theme.js";
-import { escape, rect, svgRoot, text } from "../primitives.js";
+import { rect, svgRoot, text } from "../primitives.js";
 import type { OrgInfo } from "../../types.js";
 
 const STYLES = `
@@ -75,7 +75,7 @@ export function renderBanner(info: OrgInfo, themeRaw: unknown): string {
   ${text({
     x: 72,
     y: 248,
-    text: escape(statLine),
+    text: statLine,
     fill: t.textMuted,
     fontSize: 18,
     fontFamily: FONT_FAMILY,

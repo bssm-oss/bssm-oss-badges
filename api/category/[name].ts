@@ -4,6 +4,7 @@ import { cached, KEYS, TTL } from "../../lib/cache.js";
 import { renderCategory } from "../../lib/svg/layouts/category.js";
 import { getTheme } from "../../lib/svg/theme.js";
 import { CATEGORIES } from "../../lib/data/categories.js";
+import { escape } from "../../lib/svg/primitives.js";
 
 const VALID_NAMES = new Set(Object.keys(CATEGORIES));
 
@@ -17,7 +18,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const theme = getTheme(req.query.theme);
-    const cacheKey = `bssm:svg:category:${name}:${theme}`;
+    const cacheKey = KEYS.svg(`category:${name}`, theme);
     const category = CATEGORIES[name];
 
     const svg = await cached(cacheKey, TTL.category, async () => {
@@ -41,7 +42,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 function notFoundSvg(name: string): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="60">
   <rect width="400" height="60" fill="#1a1a1a" rx="8"/>
-  <text x="16" y="36" fill="#f59e0b" font-size="13" font-family="monospace">Unknown category: ${name.slice(0, 20)}</text>
+  <text x="16" y="36" fill="#f59e0b" font-size="13" font-family="monospace">Unknown category: ${escape(name.slice(0, 20))}</text>
 </svg>`;
 }
 

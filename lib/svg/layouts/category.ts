@@ -1,5 +1,5 @@
 import { FONT_FAMILY, THEMES, getTheme, langColor } from "../theme.js";
-import { escape, langDot, rect, svgRoot, text, truncate } from "../primitives.js";
+import { langDot, rect, svgRoot, text, truncate } from "../primitives.js";
 import type { RepoInfo } from "../../types.js";
 import type { CategoryDef } from "../../data/categories.js";
 
@@ -61,7 +61,7 @@ export function renderCategory(
     ${text({
       x: PAD_X + 36,
       y: y + 64,
-      text: escape(desc),
+      text: desc,
       fill: t.textSecondary,
       fontSize: 12,
       fontFamily: FONT_FAMILY,

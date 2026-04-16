@@ -62,7 +62,13 @@ export async function invalidate(key: string): Promise<void> {
 }
 
 // 배포마다 SVG 캐시 키를 바꿔서 구버전 캐시가 자동으로 무효화됨
-const DEPLOY_VER = (process.env.VERCEL_GIT_COMMIT_SHA ?? "dev").slice(0, 7);
+// VERCEL_DEPLOYMENT_ID: 런타임에서 배포마다 고유하게 보장
+// VERCEL_GIT_COMMIT_SHA: 빌드 타임 fallback
+const DEPLOY_VER = (
+  process.env.VERCEL_DEPLOYMENT_ID ??
+  process.env.VERCEL_GIT_COMMIT_SHA ??
+  "dev"
+).slice(0, 7);
 
 /** 캐시 키 상수 */
 export const KEYS = {
