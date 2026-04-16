@@ -1,6 +1,6 @@
-import { FONT_FAMILY, THEMES, getTheme } from "../theme";
-import { avatarImage, escape, rect, relativeTime, svgRoot, text, truncate } from "../primitives";
-import type { ActivityEvent } from "../../types";
+import { FONT_FAMILY, THEMES, getTheme } from "../theme.js";
+import { avatarImage, escape, rect, relativeTime, svgRoot, text, truncate } from "../primitives.js";
+import type { ActivityEvent } from "../../types.js";
 
 const W = 800;
 const ROW_H = 56;

@@ -1,6 +1,6 @@
-import { FONT_FAMILY, THEMES, getTheme } from "../theme";
-import { escape, rect, svgRoot, text } from "../primitives";
-import type { OrgInfo } from "../../types";
+import { FONT_FAMILY, THEMES, getTheme } from "../theme.js";
+import { escape, rect, svgRoot, text } from "../primitives.js";
+import type { OrgInfo } from "../../types.js";
 
 export function renderBanner(info: OrgInfo, themeRaw: unknown): string {
   const theme = getTheme(themeRaw);

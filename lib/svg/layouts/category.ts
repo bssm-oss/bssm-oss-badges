@@ -1,7 +1,7 @@
-import { FONT_FAMILY, THEMES, getTheme, langColor } from "../theme";
-import { escape, langDot, rect, svgRoot, text, truncate } from "../primitives";
-import type { RepoInfo } from "../../types";
-import type { CategoryDef } from "../../data/categories";
+import { FONT_FAMILY, THEMES, getTheme, langColor } from "../theme.js";
+import { escape, langDot, rect, svgRoot, text, truncate } from "../primitives.js";
+import type { RepoInfo } from "../../types.js";
+import type { CategoryDef } from "../../data/categories.js";
 
 const ROW_H = 80;
 const W = 800;

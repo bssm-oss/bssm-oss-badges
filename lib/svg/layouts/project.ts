@@ -1,6 +1,6 @@
-import { FONT_FAMILY, THEMES, getTheme, langColor } from "../theme";
-import { escape, langDot, rect, relativeTime, svgRoot, text, truncate } from "../primitives";
-import type { RepoInfo } from "../../types";
+import { FONT_FAMILY, THEMES, getTheme, langColor } from "../theme.js";
+import { escape, langDot, rect, relativeTime, svgRoot, text, truncate } from "../primitives.js";
+import type { RepoInfo } from "../../types.js";
 
 const W = 400;
 

@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getMembers } from "../lib/github";
-import { cached, KEYS, TTL } from "../lib/cache";
-import { renderMembers } from "../lib/svg/layouts/members";
-import { getTheme } from "../lib/svg/theme";
+import { getMembers } from "../lib/github.js";
+import { cached, KEYS, TTL } from "../lib/cache.js";
+import { renderMembers } from "../lib/svg/layouts/members.js";
+import { getTheme } from "../lib/svg/theme.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {

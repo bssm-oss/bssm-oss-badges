@@ -1,5 +1,5 @@
 import { Octokit } from "@octokit/rest";
-import type { ActivityEvent, MemberInfo, OrgInfo, RepoInfo } from "./types";
+import type { ActivityEvent, MemberInfo, OrgInfo, RepoInfo } from "./types.js";
 
 const ORG = "bssm-oss";
 

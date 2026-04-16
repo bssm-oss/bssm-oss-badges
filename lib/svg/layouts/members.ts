@@ -1,6 +1,6 @@
-import { FONT_FAMILY, THEMES, getTheme } from "../theme";
-import { avatarImage, rect, svgRoot, text, truncate } from "../primitives";
-import type { MemberInfo } from "../../types";
+import { FONT_FAMILY, THEMES, getTheme } from "../theme.js";
+import { avatarImage, rect, svgRoot, text, truncate } from "../primitives.js";
+import type { MemberInfo } from "../../types.js";
 
 const AVATAR_R = 32;
 const CELL_W = 120;

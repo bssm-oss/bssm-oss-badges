@@ -11,21 +11,21 @@ export default async function handler(_req: VercelRequest, res: VercelResponse) 
   }
 
   try {
-    const { getTheme } = await import("../lib/svg/theme");
+    const { getTheme } = await import("../lib/svg/theme.js");
     results["theme"] = "ok: " + getTheme("dark");
   } catch (e) {
     results["theme"] = "FAIL: " + String(e);
   }
 
   try {
-    const { escape } = await import("../lib/svg/primitives");
+    const { escape } = await import("../lib/svg/primitives.js");
     results["primitives"] = "ok: " + escape("<test>");
   } catch (e) {
     results["primitives"] = "FAIL: " + String(e);
   }
 
   try {
-    const { renderBanner } = await import("../lib/svg/layouts/banner");
+    const { renderBanner } = await import("../lib/svg/layouts/banner.js");
     const svg = renderBanner({ repoCount: 1, memberCount: 1, totalStars: 1 }, "dark");
     results["banner"] = "ok: " + svg.slice(0, 30);
   } catch (e) {

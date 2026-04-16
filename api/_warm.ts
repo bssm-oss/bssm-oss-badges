@@ -1,9 +1,9 @@
 // Vercel Cron schedule: every 30 minutes
 // 모든 SVG 엔드포인트를 사전 호출해서 캐시 워밍
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getOrgInfo, getMembers, getRecentActivity, getRepos } from "../lib/github";
-import { cached, KEYS, TTL } from "../lib/cache";
-import { CATEGORIES } from "../lib/data/categories";
+import { getOrgInfo, getMembers, getRecentActivity, getRepos } from "../lib/github.js";
+import { cached, KEYS, TTL } from "../lib/cache.js";
+import { CATEGORIES } from "../lib/data/categories.js";
 
 export default async function handler(_req: VercelRequest, res: VercelResponse) {
   const results: Record<string, string> = {};
