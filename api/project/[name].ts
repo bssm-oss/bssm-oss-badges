@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getRepo } from "../../lib/github.js";
-import { cached, KEYS, TTL } from "../../lib/cache.js";
-import { renderProject } from "../../lib/svg/layouts/project.js";
-import { getTheme } from "../../lib/svg/theme.js";
+import { getRepo } from "../../lib/github";
+import { cached, KEYS, TTL } from "../../lib/cache";
+import { renderProject } from "../../lib/svg/layouts/project";
+import { getTheme } from "../../lib/svg/theme";
 
 // repo name: 영문, 숫자, ., _, - 만 허용
 const VALID_NAME = /^[a-zA-Z0-9._-]{1,100}$/;

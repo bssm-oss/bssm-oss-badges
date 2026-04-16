@@ -1,6 +1,6 @@
-import { FONT_FAMILY, THEMES, getTheme } from "../theme.js";
-import { rect, svgRoot, text } from "../primitives.js";
-import type { OrgInfo } from "../../types.js";
+import { FONT_FAMILY, THEMES, getTheme } from "../theme";
+import { rect, svgRoot, text } from "../primitives";
+import type { OrgInfo } from "../../types";
 
 interface StatCard {
   value: string;

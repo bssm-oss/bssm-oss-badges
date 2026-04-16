@@ -1,9 +1,9 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getRepos } from "../../lib/github.js";
-import { cached, TTL } from "../../lib/cache.js";
-import { renderCategory } from "../../lib/svg/layouts/category.js";
-import { getTheme } from "../../lib/svg/theme.js";
-import { CATEGORIES } from "../../lib/data/categories.js";
+import { getRepos } from "../../lib/github";
+import { cached, TTL } from "../../lib/cache";
+import { renderCategory } from "../../lib/svg/layouts/category";
+import { getTheme } from "../../lib/svg/theme";
+import { CATEGORIES } from "../../lib/data/categories";
 
 const VALID_NAMES = new Set(Object.keys(CATEGORIES));
 

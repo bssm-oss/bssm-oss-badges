@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getRecentActivity } from "../lib/github.js";
-import { cached, KEYS, TTL } from "../lib/cache.js";
-import { renderActivity } from "../lib/svg/layouts/activity.js";
-import { getTheme } from "../lib/svg/theme.js";
+import { getRecentActivity } from "../lib/github";
+import { cached, KEYS, TTL } from "../lib/cache";
+import { renderActivity } from "../lib/svg/layouts/activity";
+import { getTheme } from "../lib/svg/theme";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const limitRaw = Number(req.query.limit ?? 10);
