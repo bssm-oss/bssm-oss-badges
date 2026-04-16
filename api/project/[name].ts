@@ -19,16 +19,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const theme = getTheme(req.query.theme);
-    const cacheKey = KEYS.svg(`project:${name}:${compact}`, theme);
 
-    const svg = await cached(cacheKey, TTL.project, async () => {
-      const snapshot = await cached(KEYS.snapshot, TTL.snapshot, fetchSnapshot);
-      const repo = snapshot.repos.find((r) => r.name === name);
-      if (!repo) {
-        return notFoundSvg(name);
-      }
-      return renderProject(repo, theme, compact);
-    });
+    // snapshot은 별도 캐시 — not-found는 캐시 밖에서 처리
+    const snapshot = await cached(KEYS.snapshot, TTL.snapshot, fetchSnapshot);
+    const repo = snapshot.repos.find((r) => r.name === name);
+    if (!repo) {
+      return res.status(404).send(notFoundSvg(name));
+    }
+
+    const cacheKey = KEYS.svg(`project:${name}:${compact}`, theme);
+    const svg = await cached(cacheKey, TTL.project, async () =>
+      renderProject(repo, theme, compact),
+    );
 
     res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
     res.setHeader("Cache-Control", `public, max-age=${TTL.project}, stale-while-revalidate=60`);

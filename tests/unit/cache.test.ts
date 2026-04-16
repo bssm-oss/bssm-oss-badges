@@ -163,8 +163,9 @@ describe('KEYS', () => {
 
   it('svg(endpoint, theme) 키를 동적으로 생성한다', async () => {
     const { KEYS } = await import('../../lib/cache.js');
-    expect(KEYS.svg('banner', 'dark')).toBe('bssm:svg:banner:dark');
-    expect(KEYS.svg('stats', 'light')).toBe('bssm:svg:stats:light');
+    // 배포 버전 prefix 포함 (로컬: vdev)
+    expect(KEYS.svg('banner', 'dark')).toMatch(/^bssm:svg:v\w+:banner:dark$/);
+    expect(KEYS.svg('stats', 'light')).toMatch(/^bssm:svg:v\w+:stats:light$/);
   });
 });
 

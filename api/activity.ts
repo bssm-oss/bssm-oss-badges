@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getRecentActivity } from "../lib/github.js";
+import { getRecentActivity, fetchAvatarDataUri } from "../lib/github.js";
 import { cached, KEYS, TTL } from "../lib/cache.js";
 import { renderActivity } from "../lib/svg/layouts/activity.js";
 import { getTheme } from "../lib/svg/theme.js";
@@ -13,10 +13,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const cacheKey = KEYS.svg(`activity:${limit}`, theme);
 
     const svg = await cached(cacheKey, TTL.activity, async () => {
+      // 항상 최대치로 캐시해두고 슬라이스
       const events = await cached(KEYS.activity, TTL.activity, () =>
-        getRecentActivity(limit),
+        getRecentActivity(20),
       );
-      return renderActivity(events.slice(0, limit), theme);
+      const sliced = events.slice(0, limit);
+      // 아바타 base64 임베딩 (SVG <img> 샌드박스 외부 URL 차단 우회)
+      const eventsWithAvatars = await Promise.all(
+        sliced.map(async (ev) => ({
+          ...ev,
+          authorAvatar: await fetchAvatarDataUri(ev.authorAvatar),
+        })),
+      );
+      return renderActivity(eventsWithAvatars, theme);
     });
 
     res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");

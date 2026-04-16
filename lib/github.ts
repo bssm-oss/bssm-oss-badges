@@ -69,8 +69,17 @@ export async function fetchSnapshot(): Promise<OrgSnapshot> {
   if (json.errors?.length) {
     throw new Error(`GraphQL error: ${json.errors[0].message}`);
   }
+  if (!json.data?.organization) {
+    throw new Error("GraphQL response missing organization data");
+  }
 
-  const orgRepos = json.data!.organization.repositories;
+  const orgRepos = json.data.organization.repositories;
+
+  if (orgRepos.totalCount > orgRepos.nodes.length) {
+    console.warn(
+      `[fetchSnapshot] truncated: got ${orgRepos.nodes.length} of ${orgRepos.totalCount} repos`,
+    );
+  }
 
   const repos: RepoInfo[] = orgRepos.nodes.map((r) => ({
     name: r.name,

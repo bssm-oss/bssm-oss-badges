@@ -61,12 +61,15 @@ export async function invalidate(key: string): Promise<void> {
   }
 }
 
+// 배포마다 SVG 캐시 키를 바꿔서 구버전 캐시가 자동으로 무효화됨
+const DEPLOY_VER = (process.env.VERCEL_GIT_COMMIT_SHA ?? "dev").slice(0, 7);
+
 /** 캐시 키 상수 */
 export const KEYS = {
   snapshot: "bssm:snapshot",      // GraphQL 레포 스냅샷 (30분)
   members: "bssm:members",        // 멤버 목록 (1시간)
   activity: "bssm:activity",      // 최근 활동 (5분)
-  svg: (endpoint: string, theme: string) => `bssm:svg:${endpoint}:${theme}`,
+  svg: (endpoint: string, theme: string) => `bssm:svg:v${DEPLOY_VER}:${endpoint}:${theme}`,
 } as const;
 
 /** TTL 상수 (초) */

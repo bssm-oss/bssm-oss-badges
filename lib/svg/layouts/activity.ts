@@ -1,5 +1,5 @@
 import { FONT_FAMILY, THEMES, getTheme } from "../theme.js";
-import { avatarImage, escape, rect, relativeTime, svgRoot, text, truncate } from "../primitives.js";
+import { avatarImage, rect, relativeTime, svgRoot, text, truncate } from "../primitives.js";
 import type { ActivityEvent } from "../../types.js";
 
 const W = 800;
@@ -72,7 +72,7 @@ export function renderActivity(events: ActivityEvent[], themeRaw: unknown): stri
     ${text({
       x: PAD_X + 40,
       y: y + 20,
-      text: `${escape(ev.repo)} · ${escape(ev.author)} · ${relativeTime(ev.timestamp)}`,
+      text: `${ev.repo} · ${ev.author} · ${relativeTime(ev.timestamp)}`,
       fill: t.textSecondary,
       fontSize: 12,
       fontFamily: FONT_FAMILY,
@@ -80,7 +80,7 @@ export function renderActivity(events: ActivityEvent[], themeRaw: unknown): stri
     ${text({
       x: PAD_X + 40,
       y: y + 38,
-      text: escape(truncate(ev.message, 80)),
+      text: truncate(ev.message, 80),
       fill: t.text,
       fontSize: 13,
       fontWeight: 500,
