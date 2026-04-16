@@ -27,6 +27,20 @@ ${delays}`;
 export function renderActivity(events: ActivityEvent[], themeRaw: unknown): string {
   const theme = getTheme(themeRaw);
   const t = THEMES[theme];
+
+  if (events.length === 0) {
+    const W2 = W;
+    const H2 = HEADER_H + 64;
+    const content = `
+    ${rect({ x: 0, y: 0, width: W2, height: H2, fill: t.bg, rx: 12 })}
+    ${rect({ x: 0, y: 0, width: W2, height: HEADER_H, fill: t.bgCard, rx: 0 })}
+    ${text({ x: PAD_X, y: HEADER_H / 2 + 6, text: "📝  Recent Activity", fill: t.text, fontSize: 15, fontWeight: 600, fontFamily: FONT_FAMILY })}
+    <line x1="0" y1="${HEADER_H}" x2="${W2}" y2="${HEADER_H}" stroke="${t.border}" stroke-width="1"/>
+    ${text({ x: W2 / 2, y: HEADER_H + 38, text: "No recent activity", fill: t.textMuted, fontSize: 14, fontFamily: FONT_FAMILY, anchor: "middle" })}
+    `.trim();
+    return svgRoot(W2, H2, content);
+  }
+
   const H = HEADER_H + events.length * ROW_H + 16;
 
   const header = `

@@ -112,6 +112,27 @@ export async function getMembers(): Promise<MemberInfo[]> {
 //  최근 활동 (REST, 1 call)
 // ─────────────────────────────────────────────
 
+/** 아바타 URL을 base64 data URI로 변환 (SVG <img> 샌드박스 우회) */
+export async function fetchAvatarDataUri(url: string, size = 64): Promise<string> {
+  if (!url.startsWith("https://avatars.githubusercontent.com")) return url;
+  try {
+    const res = await fetch(`${url}&s=${size}`, {
+      headers: { "User-Agent": "bssm-oss-badges/1.0" },
+    });
+    if (!res.ok) return url;
+    const ct = res.headers.get("content-type") ?? "image/png";
+    const buf = await res.arrayBuffer();
+    const b64 = Buffer.from(buf).toString("base64");
+    return `data:${ct};base64,${b64}`;
+  } catch {
+    return url;
+  }
+}
+
+// ─────────────────────────────────────────────
+//  최근 활동 (REST, 1 call)
+// ─────────────────────────────────────────────
+
 export async function getRecentActivity(limit = 10): Promise<ActivityEvent[]> {
   const octokit = new Octokit({ auth: getToken() });
 

@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getMembers } from "../lib/github.js";
+import { getMembers, fetchAvatarDataUri } from "../lib/github.js";
 import { cached, KEYS, TTL } from "../lib/cache.js";
 import { renderMembers } from "../lib/svg/layouts/members.js";
 import { getTheme } from "../lib/svg/theme.js";
@@ -11,7 +11,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const svg = await cached(cacheKey, TTL.members, async () => {
       const members = await cached(KEYS.members, TTL.members, getMembers);
-      return renderMembers(members, theme);
+      // SVG <img> 샌드박스 환경에서 외부 URL 차단됨 → 서버에서 base64 임베딩
+      const membersWithAvatars = await Promise.all(
+        members.slice(0, 9).map(async (m) => ({
+          ...m,
+          avatarUrl: await fetchAvatarDataUri(m.avatarUrl),
+        })),
+      );
+      return renderMembers(membersWithAvatars, theme);
     });
 
     res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");

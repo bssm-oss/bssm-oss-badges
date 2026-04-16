@@ -130,10 +130,12 @@ export function avatarImage(
   fallbackInitial: string,
   fallbackColor: string,
 ): string {
-  // GitHub avatar URL만 허용
-  const safeHref = href.startsWith("https://avatars.githubusercontent.com")
-    ? href
-    : "";
+  // GitHub avatar URL 또는 서버에서 내려준 data URI만 허용
+  const safeHref =
+    href.startsWith("https://avatars.githubusercontent.com") ||
+    href.startsWith("data:image/")
+      ? href
+      : "";
 
   return `
   <defs>
