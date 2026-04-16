@@ -139,39 +139,98 @@ export async function fetchAvatarDataUri(url: string, size = 64): Promise<string
 }
 
 // ─────────────────────────────────────────────
-//  최근 활동 (REST, 1 call)
+//  최근 활동 (GraphQL — 최근 push 레포의 커밋)
+//  org events API는 payload.commits를 제공하지 않음
 // ─────────────────────────────────────────────
 
-export async function getRecentActivity(limit = 10): Promise<ActivityEvent[]> {
-  const octokit = new Octokit({ auth: getToken() });
+const ACTIVITY_QUERY = `
+  query RecentActivity($org: String!, $repoCount: Int!, $commitCount: Int!) {
+    organization(login: $org) {
+      repositories(
+        first: $repoCount
+        privacy: PUBLIC
+        orderBy: { field: PUSHED_AT, direction: DESC }
+      ) {
+        nodes {
+          name
+          defaultBranchRef {
+            target {
+              ... on Commit {
+                history(first: $commitCount) {
+                  nodes {
+                    message
+                    committedDate
+                    author {
+                      user { login avatarUrl }
+                      name
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
 
-  const { data: events } = await octokit.activity.listPublicOrgEvents({
-    org: ORG,
-    per_page: 50,
+interface GQLCommitNode {
+  message: string;
+  committedDate: string;
+  author: {
+    user: { login: string; avatarUrl: string } | null;
+    name: string;
+  };
+}
+
+interface GQLActivityRepo {
+  name: string;
+  defaultBranchRef: {
+    target: { history: { nodes: GQLCommitNode[] } } | null;
+  } | null;
+}
+
+export async function getRecentActivity(limit = 20): Promise<ActivityEvent[]> {
+  const token = getToken();
+
+  const res = await fetch("https://api.github.com/graphql", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      "User-Agent": "bssm-oss-badges/1.0",
+    },
+    body: JSON.stringify({
+      query: ACTIVITY_QUERY,
+      variables: { org: ORG, repoCount: 20, commitCount: 3 },
+    }),
   });
 
-  const pushEvents = events
-    .filter((e) => e.type === "PushEvent" && e.payload)
-    .slice(0, limit * 3);
+  const json = (await res.json()) as {
+    data?: { organization: { repositories: { nodes: GQLActivityRepo[] } } };
+    errors?: Array<{ message: string }>;
+  };
 
-  const activities: ActivityEvent[] = [];
+  if (json.errors?.length) throw new Error(`GraphQL: ${json.errors[0].message}`);
+  if (!json.data?.organization) throw new Error("GraphQL response missing org data");
 
-  for (const event of pushEvents) {
-    if (activities.length >= limit) break;
-    const payload = event.payload as {
-      commits?: Array<{ message: string }>;
-    };
-    const commits = payload.commits ?? [];
-    if (commits.length === 0) continue;
+  // 레포 × 커밋 펼쳐서 committedDate 기준 정렬 후 상위 limit개
+  const flat: ActivityEvent[] = [];
 
-    activities.push({
-      repo: event.repo.name.replace(`${ORG}/`, ""),
-      message: commits[0].message.split("\n")[0].slice(0, 60),
-      author: event.actor.login,
-      authorAvatar: event.actor.avatar_url ?? "",
-      timestamp: event.created_at ?? new Date().toISOString(),
-    });
+  for (const repo of json.data.organization.repositories.nodes) {
+    const commits = repo.defaultBranchRef?.target?.history?.nodes ?? [];
+    for (const commit of commits) {
+      flat.push({
+        repo: repo.name,
+        message: commit.message.split("\n")[0].slice(0, 60),
+        author: commit.author.user?.login ?? commit.author.name,
+        authorAvatar: commit.author.user?.avatarUrl ?? "",
+        timestamp: commit.committedDate,
+      });
+    }
   }
 
-  return activities;
+  flat.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  return flat.slice(0, limit);
 }
