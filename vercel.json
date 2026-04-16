@@ -1,16 +1,17 @@
 {
+  "rewrites": [
+    { "source": "/api/banner.svg", "destination": "/api/banner" },
+    { "source": "/api/stats.svg", "destination": "/api/stats" },
+    { "source": "/api/members.svg", "destination": "/api/members" },
+    { "source": "/api/activity.svg", "destination": "/api/activity" },
+    { "source": "/api/category/:name.svg", "destination": "/api/category/:name" },
+    { "source": "/api/project/:name.svg", "destination": "/api/project/:name" }
+  ],
   "headers": [
     {
-      "source": "/api/(.*)\\.svg",
+      "source": "/api/(.*)",
       "headers": [
-        {
-          "key": "Content-Type",
-          "value": "image/svg+xml; charset=utf-8"
-        },
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        }
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
       ]
     }
   ]
