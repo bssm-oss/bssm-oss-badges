@@ -75,7 +75,7 @@ const mockMembers: MemberInfo[] = [
   },
 ];
 
-const mockMembersMany: MemberInfo[] = Array.from({ length: 12 }, (_, i) => ({
+const mockMembersMany: MemberInfo[] = Array.from({ length: 22 }, (_, i) => ({
   login: `user${i}`,
   avatarUrl: `https://avatars.githubusercontent.com/u/${i + 10}?v=4`,
   htmlUrl: `https://github.com/user${i}`,
@@ -731,21 +731,20 @@ describe('renderMembers()', () => {
     expect(svg).toContain('solo');
   });
 
-  it('9명을 초과하는 목록은 9명만 렌더링한다', () => {
+  it('20명을 초과하는 목록은 20명만 렌더링한다', () => {
     const svg = renderMembers(mockMembersMany, 'dark');
-    // 10번째 멤버(user9)는 렌더링되지 않아야 함
-    expect(svg).not.toContain('user9');
-    expect(svg).not.toContain('user10');
-    expect(svg).not.toContain('user11');
-    // 처음 9명은 있어야 함
-    for (let i = 0; i < 9; i++) {
+    // 21번째 멤버(user20)는 렌더링되지 않아야 함
+    expect(svg).not.toContain('user20');
+    expect(svg).not.toContain('user21');
+    // 처음 20명은 있어야 함
+    for (let i = 0; i < 20; i++) {
       expect(svg).toContain(`user${i}`);
     }
   });
 
-  it('멤버 수에 따라 3열로 배치된다', () => {
+  it('멤버 수에 따라 5열로 배치된다', () => {
     const svg = renderMembers(mockMembers, 'dark');
-    // 3명 → 1행 3열: height = 1 * CELL_H + PAD * 2 = 100 + 80 = 180
+    // 3명 → 1행 5열: height = 1 * CELL_H + PAD * 2 = 100 + 80 = 180
     expect(svg).toContain('height="180"');
   });
 

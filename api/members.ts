@@ -13,7 +13,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const members = await cached(KEYS.members, TTL.members, getMembers);
       // SVG <img> 샌드박스 환경에서 외부 URL 차단됨 → 서버에서 base64 임베딩
       const membersWithAvatars = await Promise.all(
-        members.slice(0, 9).map(async (m) => ({
+        members.slice(0, 20).map(async (m) => ({
           ...m,
           avatarUrl: await fetchAvatarDataUri(m.avatarUrl),
         })),

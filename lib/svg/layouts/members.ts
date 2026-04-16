@@ -3,10 +3,11 @@ import { avatarImage, rect, svgRoot, text, truncate } from "../primitives.js";
 import type { MemberInfo } from "../../types.js";
 
 const AVATAR_R = 32;
-const CELL_W = 120;
-const CELL_H = 100;
-const COLS = 3;
+const COLS = 5;
+const W_TOTAL = 800;
 const PAD = 40;
+const CELL_W = (W_TOTAL - PAD * 2) / COLS; // 144
+const CELL_H = 100;
 
 const PALETTE = [
   "#3b82f6", "#8b5cf6", "#ec4899",
@@ -30,9 +31,9 @@ export function renderMembers(members: MemberInfo[], themeRaw: unknown): string 
   const theme = getTheme(themeRaw);
   const t = THEMES[theme];
 
-  const visible = members.slice(0, 9);
+  const visible = members.slice(0, 20);
   const rows = Math.ceil(visible.length / COLS);
-  const W = COLS * CELL_W + PAD * 2;
+  const W = W_TOTAL;
   const H = rows * CELL_H + PAD * 2;
 
   const cells = visible
