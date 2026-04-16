@@ -10,6 +10,6 @@
     "rootDir": ".",
     "baseUrl": "."
   },
-  "include": ["api/**/*", "lib/**/*", "scripts/**/*"],
+  "include": ["api/**/*", "lib/**/*", "scripts/**/*", "tests/**/*"],
   "exclude": ["node_modules", ".build", ".vercel"]
 }
