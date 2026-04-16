@@ -1,8 +1,9 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getOrgInfo } from "../lib/github.js";
+import { fetchSnapshot, getMembers } from "../lib/github.js";
 import { cached, KEYS, TTL } from "../lib/cache.js";
 import { renderStats } from "../lib/svg/layouts/stats.js";
 import { getTheme } from "../lib/svg/theme.js";
+import type { OrgInfo } from "../lib/types.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
@@ -10,7 +11,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const cacheKey = KEYS.svg("stats", theme);
 
     const svg = await cached(cacheKey, TTL.stats, async () => {
-      const info = await cached(KEYS.orgInfo, TTL.stats, getOrgInfo);
+      const [snapshot, members] = await Promise.all([
+        cached(KEYS.snapshot, TTL.snapshot, fetchSnapshot),
+        cached(KEYS.members, TTL.members, getMembers),
+      ]);
+      const info: OrgInfo = {
+        repoCount: snapshot.repoCount,
+        memberCount: members.length,
+        totalStars: snapshot.totalStars,
+      };
       return renderStats(info, theme);
     });
 

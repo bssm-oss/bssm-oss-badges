@@ -7,11 +7,22 @@ const ROW_H = 56;
 const PAD_X = 24;
 const HEADER_H = 48;
 
-// 아바타 fallback 팔레트
 const PALETTE = [
   "#3b82f6", "#8b5cf6", "#ec4899",
   "#10b981", "#f59e0b", "#ef4444",
 ];
+
+function activityStyles(count: number): string {
+  const delays = Array.from({ length: count }, (_, i) =>
+    `.a${i} { animation: aSlideIn .3s ease-out ${(i * 0.07).toFixed(2)}s both }`
+  ).join("\n");
+  return `
+@keyframes aSlideIn {
+  from { opacity: 0; transform: translateX(-8px) }
+  to   { opacity: 1; transform: translateX(0) }
+}
+${delays}`;
+}
 
 export function renderActivity(events: ActivityEvent[], themeRaw: unknown): string {
   const theme = getTheme(themeRaw);
@@ -19,7 +30,6 @@ export function renderActivity(events: ActivityEvent[], themeRaw: unknown): stri
   const H = HEADER_H + events.length * ROW_H + 16;
 
   const header = `
-  <!-- header -->
   ${rect({ x: 0, y: 0, width: W, height: HEADER_H, fill: t.bgCard, rx: 0 })}
   ${text({
     x: PAD_X,
@@ -43,9 +53,8 @@ export function renderActivity(events: ActivityEvent[], themeRaw: unknown): stri
       const fallbackColor = PALETTE[i % PALETTE.length];
 
       return `
+    <g class="a${i}">
     ${avatarImage(clipId, cx, cy, 16, ev.authorAvatar, initial, fallbackColor)}
-
-    <!-- repo + author + time -->
     ${text({
       x: PAD_X + 40,
       y: y + 20,
@@ -54,8 +63,6 @@ export function renderActivity(events: ActivityEvent[], themeRaw: unknown): stri
       fontSize: 12,
       fontFamily: FONT_FAMILY,
     })}
-
-    <!-- commit message -->
     ${text({
       x: PAD_X + 40,
       y: y + 38,
@@ -65,8 +72,8 @@ export function renderActivity(events: ActivityEvent[], themeRaw: unknown): stri
       fontWeight: 500,
       fontFamily: FONT_FAMILY,
     })}
-
-    ${!isLast ? `<line x1="${PAD_X}" y1="${y + ROW_H}" x2="${W - PAD_X}" y2="${y + ROW_H}" stroke="${t.border}" stroke-width="1"/>` : ""}`;
+    ${!isLast ? `<line x1="${PAD_X}" y1="${y + ROW_H}" x2="${W - PAD_X}" y2="${y + ROW_H}" stroke="${t.border}" stroke-width="1"/>` : ""}
+    </g>`;
     })
     .join("");
 
@@ -76,5 +83,5 @@ export function renderActivity(events: ActivityEvent[], themeRaw: unknown): stri
   ${rows}
   `.trim();
 
-  return svgRoot(W, H, content);
+  return svgRoot(W, H, content, activityStyles(events.length));
 }

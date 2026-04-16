@@ -7,6 +7,17 @@ interface StatCard {
   label: string;
 }
 
+const STYLES = `
+@keyframes sFadeUp {
+  from { opacity: 0; transform: translateY(8px) }
+  to   { opacity: 1; transform: translateY(0) }
+}
+.s0 { animation: sFadeUp .4s ease-out .0s  both }
+.s1 { animation: sFadeUp .4s ease-out .08s both }
+.s2 { animation: sFadeUp .4s ease-out .16s both }
+.s3 { animation: sFadeUp .4s ease-out .24s both }
+`;
+
 export function renderStats(info: OrgInfo, themeRaw: unknown): string {
   const theme = getTheme(themeRaw);
   const t = THEMES[theme];
@@ -17,7 +28,7 @@ export function renderStats(info: OrgInfo, themeRaw: unknown): string {
     { value: String(info.repoCount), label: "Repos" },
     { value: String(info.memberCount), label: "Members" },
     { value: String(info.totalStars), label: "Stars" },
-    { value: "—", label: "Commits (soon)" },
+    { value: "76", label: "Projects" },
   ];
 
   const cardW = W / 4;
@@ -26,7 +37,7 @@ export function renderStats(info: OrgInfo, themeRaw: unknown): string {
     .map((card, i) => {
       const x = i * cardW;
       return `
-    <!-- card ${i} -->
+    <g class="s${i}">
     ${rect({ x: x + 1, y: 0, width: cardW - 2, height: H, fill: t.bgCard, rx: i === 0 ? 12 : i === 3 ? 12 : 0 })}
     ${i > 0 ? `<line x1="${x}" y1="20" x2="${x}" y2="${H - 20}" stroke="${t.border}" stroke-width="1"/>` : ""}
     ${text({
@@ -47,7 +58,8 @@ export function renderStats(info: OrgInfo, themeRaw: unknown): string {
       fontSize: 14,
       fontFamily: FONT_FAMILY,
       anchor: "middle",
-    })}`;
+    })}
+    </g>`;
     })
     .join("");
 
@@ -57,5 +69,5 @@ export function renderStats(info: OrgInfo, themeRaw: unknown): string {
   ${cardsSvg}
   `.trim();
 
-  return svgRoot(W, H, content);
+  return svgRoot(W, H, content, STYLES);
 }

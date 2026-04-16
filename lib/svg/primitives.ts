@@ -18,7 +18,7 @@ export interface TextProps {
   fontFamily?: string;
   anchor?: "start" | "middle" | "end";
   opacity?: number;
-  maxWidth?: number;
+  class?: string;
 }
 
 export function text({
@@ -31,7 +31,9 @@ export function text({
   fontFamily = '"SF Pro Display", "Inter", -apple-system, sans-serif',
   anchor = "start",
   opacity = 1,
+  class: className,
 }: TextProps): string {
+  const classAttr = className ? ` class="${escape(className)}"` : "";
   return `<text
     x="${x}"
     y="${y}"
@@ -41,7 +43,7 @@ export function text({
     font-family="${escape(fontFamily)}"
     text-anchor="${anchor}"
     opacity="${opacity}"
-    dominant-baseline="auto"
+    dominant-baseline="auto"${classAttr}
   >${escape(content)}</text>`;
 }
 
@@ -84,11 +86,6 @@ export function langDot(cx: number, cy: number, color: string): string {
   return circle(cx, cy, 6, color);
 }
 
-/** 별 아이콘 (간단 텍스트 기반) */
-export function starIcon(x: number, y: number, fill: string, size = 13): string {
-  return `<text x="${x}" y="${y}" font-size="${size}" fill="${fill}" dominant-baseline="middle">⭐</text>`;
-}
-
 /** 상대 시간 계산 */
 export function relativeTime(isoString: string): string {
   const diff = Date.now() - new Date(isoString).getTime();
@@ -102,22 +99,24 @@ export function relativeTime(isoString: string): string {
   return `${months}mo ago`;
 }
 
-/** SVG 루트 래퍼 */
+/** SVG 루트 래퍼 — styles 문자열은 <style> 태그 안에 삽입됨 */
 export function svgRoot(
   width: number,
   height: number,
   content: string,
-  extra = "",
+  styles = "",
 ): string {
+  const styleBlock = styles
+    ? `<style>${styles}</style>\n`
+    : "";
   return `<svg
   xmlns="http://www.w3.org/2000/svg"
   xmlns:xlink="http://www.w3.org/1999/xlink"
   width="${width}"
   height="${height}"
   viewBox="0 0 ${width} ${height}"
-  ${extra}
 >
-${content}
+${styleBlock}${content}
 </svg>`.trim();
 }
 

@@ -146,9 +146,9 @@ describe('cached() — in-memory fallback', () => {
 // ---------------------------------------------------------------------------
 
 describe('KEYS', () => {
-  it('orgInfo 키가 올바르다', async () => {
+  it('snapshot 키가 올바르다', async () => {
     const { KEYS } = await import('../../lib/cache.js');
-    expect(KEYS.orgInfo).toBe('bssm:org:info');
+    expect(KEYS.snapshot).toBe('bssm:snapshot');
   });
 
   it('members 키가 올바르다', async () => {
@@ -156,9 +156,9 @@ describe('KEYS', () => {
     expect(KEYS.members).toBe('bssm:members');
   });
 
-  it('repo(name) 키를 동적으로 생성한다', async () => {
+  it('activity 키가 올바르다', async () => {
     const { KEYS } = await import('../../lib/cache.js');
-    expect(KEYS.repo('CodeAgora')).toBe('bssm:repo:CodeAgora');
+    expect(KEYS.activity).toBe('bssm:activity');
   });
 
   it('svg(endpoint, theme) 키를 동적으로 생성한다', async () => {

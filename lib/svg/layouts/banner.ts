@@ -2,6 +2,22 @@ import { FONT_FAMILY, THEMES, getTheme } from "../theme.js";
 import { escape, rect, svgRoot, text } from "../primitives.js";
 import type { OrgInfo } from "../../types.js";
 
+const STYLES = `
+@keyframes bFadeIn {
+  from { opacity: 0 }
+  to   { opacity: 1 }
+}
+@keyframes bSlideUp {
+  from { opacity: 0; transform: translateY(10px) }
+  to   { opacity: 1; transform: translateY(0) }
+}
+.b-title  { animation: bSlideUp .5s ease-out .0s both }
+.b-sub    { animation: bSlideUp .5s ease-out .15s both }
+.b-line   { animation: bFadeIn  .4s ease-out .3s both }
+.b-stats  { animation: bFadeIn  .4s ease-out .4s both }
+.b-deco   { animation: bFadeIn  .6s ease-out .1s both }
+`;
+
 export function renderBanner(info: OrgInfo, themeRaw: unknown): string {
   const theme = getTheme(themeRaw);
   const t = THEMES[theme];
@@ -17,6 +33,7 @@ export function renderBanner(info: OrgInfo, themeRaw: unknown): string {
   <rect x="48" y="64" width="4" height="172" fill="${t.accent}" rx="2"/>
 
   <!-- 조직명 -->
+  <g class="b-title">
   ${text({
     x: 72,
     y: 120,
@@ -26,8 +43,10 @@ export function renderBanner(info: OrgInfo, themeRaw: unknown): string {
     fontWeight: 700,
     fontFamily: FONT_FAMILY,
   })}
+  </g>
 
-  <!-- 슬로건 line 1 -->
+  <!-- 슬로건 -->
+  <g class="b-sub">
   ${text({
     x: 72,
     y: 164,
@@ -36,8 +55,6 @@ export function renderBanner(info: OrgInfo, themeRaw: unknown): string {
     fontSize: 22,
     fontFamily: FONT_FAMILY,
   })}
-
-  <!-- 슬로건 line 2 -->
   ${text({
     x: 72,
     y: 194,
@@ -46,11 +63,15 @@ export function renderBanner(info: OrgInfo, themeRaw: unknown): string {
     fontSize: 22,
     fontFamily: FONT_FAMILY,
   })}
+  </g>
 
   <!-- 구분선 -->
+  <g class="b-line">
   <line x1="72" y1="216" x2="480" y2="216" stroke="${t.border}" stroke-width="1"/>
+  </g>
 
   <!-- 통계 -->
+  <g class="b-stats">
   ${text({
     x: 72,
     y: 248,
@@ -59,13 +80,13 @@ export function renderBanner(info: OrgInfo, themeRaw: unknown): string {
     fontSize: 18,
     fontFamily: FONT_FAMILY,
   })}
+  </g>
 
-  <!-- 우측 장식 원 (배경) -->
+  <!-- 우측 장식 원 -->
+  <g class="b-deco">
   <circle cx="${W - 120}" cy="${H / 2}" r="140" fill="${t.bgCard}" opacity="0.6"/>
   <circle cx="${W - 120}" cy="${H / 2}" r="100" fill="${t.bgElevated}" opacity="0.5"/>
   <circle cx="${W - 120}" cy="${H / 2}" r="60" fill="${t.accent}" opacity="0.12"/>
-
-  <!-- 우측 텍스트 -->
   ${text({
     x: W - 120,
     y: H / 2 - 12,
@@ -77,7 +98,8 @@ export function renderBanner(info: OrgInfo, themeRaw: unknown): string {
     anchor: "middle",
     opacity: 0.6,
   })}
+  </g>
   `.trim();
 
-  return svgRoot(W, H, content);
+  return svgRoot(W, H, content, STYLES);
 }

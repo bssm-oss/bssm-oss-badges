@@ -4,6 +4,14 @@ import type { RepoInfo } from "../../types.js";
 
 const W = 400;
 
+const STYLES = `
+@keyframes pFadeIn {
+  from { opacity: 0 }
+  to   { opacity: 1 }
+}
+.p-card { animation: pFadeIn .4s ease-out both }
+`;
+
 export function renderProject(
   repo: RepoInfo,
   themeRaw: unknown,
@@ -13,17 +21,16 @@ export function renderProject(
   const t = THEMES[theme];
   const H = compact ? 80 : 160;
   const lang = repo.language ?? "—";
-  const color = langColor(repo.language);
+  const color = langColor(repo.language, repo.languageColor);
 
   let content: string;
 
   if (compact) {
     content = `
+    <g class="p-card">
     ${rect({ x: 0, y: 0, width: W, height: H, fill: t.bgCard, rx: 10 })}
     ${rect({ x: 0, y: 0, width: W, height: H, fill: t.bg, rx: 10, stroke: t.border, strokeWidth: 1 })}
-
     ${langDot(20, H / 2, color)}
-
     ${text({
       x: 36,
       y: H / 2 - 6,
@@ -41,7 +48,6 @@ export function renderProject(
       fontSize: 11,
       fontFamily: FONT_FAMILY,
     })}
-
     ${repo.stars > 0 ? text({
       x: W - 16,
       y: H / 2 - 2,
@@ -51,16 +57,16 @@ export function renderProject(
       fontFamily: FONT_FAMILY,
       anchor: "end",
     }) : ""}
+    </g>
     `.trim();
   } else {
     const desc = truncate(repo.description ?? "No description", 52);
     const updated = relativeTime(repo.updatedAt);
 
     content = `
+    <g class="p-card">
     ${rect({ x: 0, y: 0, width: W, height: H, fill: t.bg, rx: 10 })}
     ${rect({ x: 0, y: 0, width: W, height: H, fill: t.bg, rx: 10, stroke: t.border, strokeWidth: 1 })}
-
-    <!-- header -->
     ${langDot(20, 32, color)}
     ${text({
       x: 36,
@@ -71,7 +77,6 @@ export function renderProject(
       fontWeight: 700,
       fontFamily: FONT_FAMILY,
     })}
-
     ${repo.stars > 0 ? text({
       x: W - 16,
       y: 36,
@@ -81,11 +86,7 @@ export function renderProject(
       fontFamily: FONT_FAMILY,
       anchor: "end",
     }) : ""}
-
-    <!-- divider -->
     <line x1="16" y1="52" x2="${W - 16}" y2="52" stroke="${t.border}" stroke-width="1"/>
-
-    <!-- description -->
     ${text({
       x: 20,
       y: 76,
@@ -94,8 +95,6 @@ export function renderProject(
       fontSize: 13,
       fontFamily: FONT_FAMILY,
     })}
-
-    <!-- lang + updated -->
     ${langDot(20, H - 24, color)}
     ${text({
       x: 36,
@@ -114,8 +113,9 @@ export function renderProject(
       fontFamily: FONT_FAMILY,
       anchor: "end",
     })}
+    </g>
     `.trim();
   }
 
-  return svgRoot(W, H, content);
+  return svgRoot(W, H, content, STYLES);
 }

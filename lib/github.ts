@@ -1,124 +1,119 @@
 import { Octokit } from "@octokit/rest";
-import type { ActivityEvent, MemberInfo, OrgInfo, RepoInfo } from "./types.js";
+import type { ActivityEvent, MemberInfo, OrgSnapshot, RepoInfo } from "./types.js";
 
 const ORG = "bssm-oss";
 
-function getOctokit(): Octokit {
+function getToken(): string {
   const token = process.env.GITHUB_TOKEN;
   if (!token) throw new Error("GITHUB_TOKEN is not set");
-  return new Octokit({ auth: token });
+  return token;
 }
 
-export async function getOrgInfo(): Promise<OrgInfo> {
-  const octokit = getOctokit();
+// ─────────────────────────────────────────────
+//  GraphQL 스냅샷 (레포 전체, 1 포인트/쿼리)
+// ─────────────────────────────────────────────
 
-  const [reposRes, membersRes] = await Promise.all([
-    octokit.paginate(octokit.repos.listForOrg, {
-      org: ORG,
-      type: "public",
-      per_page: 100,
-    }),
-    octokit.paginate(octokit.orgs.listMembers, {
-      org: ORG,
-      per_page: 100,
-    }),
-  ]);
+const SNAPSHOT_QUERY = `
+  query {
+    organization(login: "${ORG}") {
+      repositories(
+        first: 100
+        privacy: PUBLIC
+        orderBy: { field: UPDATED_AT, direction: DESC }
+      ) {
+        totalCount
+        nodes {
+          name
+          description
+          primaryLanguage { name color }
+          stargazerCount
+          updatedAt
+          url
+        }
+      }
+    }
+  }
+`;
 
-  const totalStars = reposRes.reduce((sum, repo) => sum + (repo.stargazers_count ?? 0), 0);
-
-  return {
-    repoCount: reposRes.length,
-    memberCount: membersRes.length,
-    totalStars,
-  };
+interface GQLRepo {
+  name: string;
+  description: string | null;
+  primaryLanguage: { name: string; color: string } | null;
+  stargazerCount: number;
+  updatedAt: string;
+  url: string;
 }
 
-export async function getRepo(name: string): Promise<RepoInfo> {
-  const octokit = getOctokit();
-  const { data } = await octokit.repos.get({ owner: ORG, repo: name });
+export async function fetchSnapshot(): Promise<OrgSnapshot> {
+  const token = getToken();
 
-  return {
-    name: data.name,
-    description: data.description,
-    language: data.language ?? null,
-    stars: data.stargazers_count ?? 0,
-    updatedAt: data.updated_at ?? new Date().toISOString(),
-    htmlUrl: data.html_url,
-  };
-}
-
-export async function getRepos(names: string[]): Promise<RepoInfo[]> {
-  const results = await Promise.allSettled(names.map((n) => getRepo(n)));
-  return results
-    .filter((r): r is PromiseFulfilledResult<RepoInfo> => r.status === "fulfilled")
-    .map((r) => r.value);
-}
-
-export async function getAllPublicRepos(): Promise<RepoInfo[]> {
-  const octokit = getOctokit();
-  const repos = await octokit.paginate(octokit.repos.listForOrg, {
-    org: ORG,
-    type: "public",
-    per_page: 100,
+  const res = await fetch("https://api.github.com/graphql", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      "User-Agent": "bssm-oss-badges/1.0",
+    },
+    body: JSON.stringify({ query: SNAPSHOT_QUERY }),
   });
 
-  return repos.map((r) => ({
+  if (!res.ok) {
+    throw new Error(`GitHub GraphQL ${res.status}: ${await res.text()}`);
+  }
+
+  const json = (await res.json()) as {
+    data?: { organization: { repositories: { totalCount: number; nodes: GQLRepo[] } } };
+    errors?: Array<{ message: string }>;
+  };
+
+  if (json.errors?.length) {
+    throw new Error(`GraphQL error: ${json.errors[0].message}`);
+  }
+
+  const orgRepos = json.data!.organization.repositories;
+
+  const repos: RepoInfo[] = orgRepos.nodes.map((r) => ({
     name: r.name,
-    description: r.description ?? null,
-    language: r.language ?? null,
-    stars: r.stargazers_count ?? 0,
-    updatedAt: r.updated_at ?? new Date().toISOString(),
-    htmlUrl: r.html_url,
+    description: r.description,
+    language: r.primaryLanguage?.name ?? null,
+    languageColor: r.primaryLanguage?.color ?? null,
+    stars: r.stargazerCount,
+    updatedAt: r.updatedAt,
+    htmlUrl: r.url,
   }));
+
+  return {
+    repos,
+    repoCount: orgRepos.totalCount,
+    totalStars: repos.reduce((sum, r) => sum + r.stars, 0),
+  };
 }
 
+// ─────────────────────────────────────────────
+//  멤버 목록 (REST, 1 call)
+// ─────────────────────────────────────────────
+
 export async function getMembers(): Promise<MemberInfo[]> {
-  const octokit = getOctokit();
+  const octokit = new Octokit({ auth: getToken() });
 
   const members = await octokit.paginate(octokit.orgs.listMembers, {
     org: ORG,
     per_page: 100,
   });
 
-  const repos = await octokit.paginate(octokit.repos.listForOrg, {
-    org: ORG,
-    type: "public",
-    per_page: 100,
-  });
-
-  // repo당 기여자 수 (commits 비용이 크므로 단순히 repo owner 기준)
-  const memberRepoCounts: Record<string, number> = {};
-  for (const member of members) {
-    memberRepoCounts[member.login] = 0;
-  }
-
-  for (const repo of repos) {
-    try {
-      const contributors = await octokit.repos.listContributors({
-        owner: ORG,
-        repo: repo.name,
-        per_page: 5,
-      });
-      for (const c of contributors.data) {
-        if (c.login && memberRepoCounts[c.login] !== undefined) {
-          memberRepoCounts[c.login]++;
-        }
-      }
-    } catch {
-      // 빈 레포 등 무시
-    }
-  }
-
   return members.map((m) => ({
     login: m.login,
     avatarUrl: m.avatar_url,
     htmlUrl: m.html_url,
-    repoCount: memberRepoCounts[m.login] ?? 0,
   }));
 }
 
+// ─────────────────────────────────────────────
+//  최근 활동 (REST, 1 call)
+// ─────────────────────────────────────────────
+
 export async function getRecentActivity(limit = 10): Promise<ActivityEvent[]> {
-  const octokit = getOctokit();
+  const octokit = new Octokit({ auth: getToken() });
 
   const { data: events } = await octokit.activity.listPublicOrgEvents({
     org: ORG,
@@ -127,7 +122,7 @@ export async function getRecentActivity(limit = 10): Promise<ActivityEvent[]> {
 
   const pushEvents = events
     .filter((e) => e.type === "PushEvent" && e.payload)
-    .slice(0, limit * 3); // 여분 확보
+    .slice(0, limit * 3);
 
   const activities: ActivityEvent[] = [];
 

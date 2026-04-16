@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getRepo } from "../../lib/github.js";
+import { fetchSnapshot } from "../../lib/github.js";
 import { cached, KEYS, TTL } from "../../lib/cache.js";
 import { renderProject } from "../../lib/svg/layouts/project.js";
 import { getTheme } from "../../lib/svg/theme.js";
@@ -22,7 +22,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const cacheKey = KEYS.svg(`project:${name}:${compact}`, theme);
 
     const svg = await cached(cacheKey, TTL.project, async () => {
-      const repo = await cached(KEYS.repo(name), TTL.project, () => getRepo(name));
+      const snapshot = await cached(KEYS.snapshot, TTL.snapshot, fetchSnapshot);
+      const repo = snapshot.repos.find((r) => r.name === name);
+      if (!repo) {
+        return notFoundSvg(name);
+      }
       return renderProject(repo, theme, compact);
     });
 
@@ -33,6 +37,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.error(`[project/${name}]`, err);
     res.status(500).send(errorSvg("Error loading repo"));
   }
+}
+
+function notFoundSvg(name: string): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="60">
+  <rect width="400" height="60" fill="#1a1a1a" rx="8"/>
+  <text x="16" y="36" fill="#f59e0b" font-size="13" font-family="monospace">Repo not found: ${name.slice(0, 30)}</text>
+</svg>`;
 }
 
 function errorSvg(msg: string): string {

@@ -31,6 +31,7 @@ const mockRepo: RepoInfo = {
   name: 'CodeAgora',
   description: 'A collaborative coding platform for teams',
   language: 'TypeScript',
+  languageColor: '#3178c6',
   stars: 88,
   updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2h ago
   htmlUrl: 'https://github.com/bssm-oss/CodeAgora',
@@ -40,6 +41,7 @@ const mockRepoNoStars: RepoInfo = {
   name: 'test-repo',
   description: null,
   language: null,
+  languageColor: null,
   stars: 0,
   updatedAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(), // 5m ago
   htmlUrl: 'https://github.com/bssm-oss/test-repo',
@@ -49,6 +51,7 @@ const mockRepoLongDesc: RepoInfo = {
   name: 'long-desc-repo',
   description: 'This is a very long description that exceeds the maximum character limit for SVG rendering and should be truncated with an ellipsis',
   language: 'JavaScript',
+  languageColor: '#f7df1e',
   stars: 10,
   updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3d ago
   htmlUrl: 'https://github.com/bssm-oss/long-desc-repo',
@@ -59,19 +62,16 @@ const mockMembers: MemberInfo[] = [
     login: 'alice',
     avatarUrl: 'https://avatars.githubusercontent.com/u/1?v=4',
     htmlUrl: 'https://github.com/alice',
-    repoCount: 5,
   },
   {
     login: 'bob',
     avatarUrl: 'https://avatars.githubusercontent.com/u/2?v=4',
     htmlUrl: 'https://github.com/bob',
-    repoCount: 3,
   },
   {
     login: 'charlie',
     avatarUrl: 'https://avatars.githubusercontent.com/u/3?v=4',
     htmlUrl: 'https://github.com/charlie',
-    repoCount: 0,
   },
 ];
 
@@ -79,7 +79,6 @@ const mockMembersMany: MemberInfo[] = Array.from({ length: 12 }, (_, i) => ({
   login: `user${i}`,
   avatarUrl: `https://avatars.githubusercontent.com/u/${i + 10}?v=4`,
   htmlUrl: `https://github.com/user${i}`,
-  repoCount: i,
 }));
 
 const mockCategory: CategoryDef = {
@@ -94,6 +93,7 @@ const mockCategoryRepos: RepoInfo[] = [
     name: 'cotor',
     description: 'AI-powered commit tool',
     language: 'Go',
+    languageColor: '#00add8',
     stars: 25,
     updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
     htmlUrl: 'https://github.com/bssm-oss/cotor',
@@ -398,7 +398,7 @@ describe('renderStats()', () => {
     expect(svg).toContain('Repos');
     expect(svg).toContain('Members');
     expect(svg).toContain('Stars');
-    expect(svg).toContain('Commits');
+    expect(svg).toContain('Projects');
   });
 
   it('레포 수 값을 포함한다', () => {
@@ -416,9 +416,9 @@ describe('renderStats()', () => {
     expect(svg).toContain('1234');
   });
 
-  it('대시(—)를 Commits soon 값으로 포함한다', () => {
+  it('Projects 카드에 76을 표시한다', () => {
     const svg = renderStats(mockOrgInfo, 'dark');
-    expect(svg).toContain('—');
+    expect(svg).toContain('76');
   });
 
   it('light 테마에서도 유효한 SVG를 반환한다', () => {
@@ -720,15 +720,15 @@ describe('renderMembers()', () => {
     expect(svg).toContain('https://avatars.githubusercontent.com/u/1?v=4');
   });
 
-  it('repoCount > 0인 멤버에 repos 텍스트를 표시한다', () => {
+  it('멤버 login이 SVG에 포함된다', () => {
     const svg = renderMembers(mockMembers, 'dark');
-    expect(svg).toContain('5 repos');
-    expect(svg).toContain('3 repos');
+    expect(svg).toContain('alice');
+    expect(svg).toContain('bob');
   });
 
-  it('repoCount = 0인 멤버에는 repos 텍스트를 표시하지 않는다', () => {
-    const svg = renderMembers([{ login: 'zero', avatarUrl: 'https://avatars.githubusercontent.com/u/99?v=4', htmlUrl: 'https://github.com/zero', repoCount: 0 }], 'dark');
-    expect(svg).not.toContain('0 repos');
+  it('단일 멤버도 정상 렌더링된다', () => {
+    const svg = renderMembers([{ login: 'solo', avatarUrl: 'https://avatars.githubusercontent.com/u/99?v=4', htmlUrl: 'https://github.com/solo' }], 'dark');
+    expect(svg).toContain('solo');
   });
 
   it('9명을 초과하는 목록은 9명만 렌더링한다', () => {
@@ -760,7 +760,6 @@ describe('renderMembers()', () => {
       login: 'hacker',
       avatarUrl: 'https://evil.com/malicious.png',
       htmlUrl: 'https://github.com/hacker',
-      repoCount: 1,
     }];
     const svg = renderMembers(unsafeMembers, 'dark');
     expect(svg).not.toContain('https://evil.com/malicious.png');

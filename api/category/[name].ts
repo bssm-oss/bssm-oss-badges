@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getRepos } from "../../lib/github.js";
-import { cached, TTL } from "../../lib/cache.js";
+import { fetchSnapshot } from "../../lib/github.js";
+import { cached, KEYS, TTL } from "../../lib/cache.js";
 import { renderCategory } from "../../lib/svg/layouts/category.js";
 import { getTheme } from "../../lib/svg/theme.js";
 import { CATEGORIES } from "../../lib/data/categories.js";
@@ -21,11 +21,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const category = CATEGORIES[name];
 
     const svg = await cached(cacheKey, TTL.category, async () => {
-      const repos = await cached(
-        `bssm:repos:category:${name}`,
-        TTL.category,
-        () => getRepos(category.repos),
-      );
+      const snapshot = await cached(KEYS.snapshot, TTL.snapshot, fetchSnapshot);
+      // 카테고리 순서 유지하면서 snapshot에서 필터
+      const repos = category.repos
+        .map((repoName) => snapshot.repos.find((r) => r.name === repoName))
+        .filter((r) => r !== undefined);
       return renderCategory(category, repos, theme);
     });
 

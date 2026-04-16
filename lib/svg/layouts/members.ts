@@ -8,23 +8,34 @@ const CELL_H = 100;
 const COLS = 3;
 const PAD = 40;
 
-// 아바타 fallback 컬러 팔레트
 const PALETTE = [
   "#3b82f6", "#8b5cf6", "#ec4899",
   "#10b981", "#f59e0b", "#ef4444",
   "#06b6d4", "#84cc16", "#f97316",
 ];
 
+function memberStyles(count: number): string {
+  const delays = Array.from({ length: count }, (_, i) =>
+    `.m${i} { animation: mPopIn .35s ease-out ${(i * 0.06).toFixed(2)}s both }`
+  ).join("\n");
+  return `
+@keyframes mPopIn {
+  from { opacity: 0; transform: scale(.8) }
+  to   { opacity: 1; transform: scale(1) }
+}
+${delays}`;
+}
+
 export function renderMembers(members: MemberInfo[], themeRaw: unknown): string {
   const theme = getTheme(themeRaw);
   const t = THEMES[theme];
 
-  const rows = Math.ceil(members.length / COLS);
+  const visible = members.slice(0, 9);
+  const rows = Math.ceil(visible.length / COLS);
   const W = COLS * CELL_W + PAD * 2;
   const H = rows * CELL_H + PAD * 2;
 
-  const cells = members
-    .slice(0, 9)
+  const cells = visible
     .map((m, i) => {
       const col = i % COLS;
       const row = Math.floor(i / COLS);
@@ -36,6 +47,7 @@ export function renderMembers(members: MemberInfo[], themeRaw: unknown): string 
 
       return `
     <a href="${m.htmlUrl}" target="_blank">
+    <g class="m${i}">
       ${avatarImage(clipId, cx, cy, AVATAR_R, m.avatarUrl, initial, fallbackColor)}
       ${text({
         x: cx,
@@ -47,15 +59,7 @@ export function renderMembers(members: MemberInfo[], themeRaw: unknown): string 
         fontFamily: FONT_FAMILY,
         anchor: "middle",
       })}
-      ${m.repoCount > 0 ? text({
-        x: cx,
-        y: cy + AVATAR_R + 32,
-        text: `${m.repoCount} repos`,
-        fill: t.textMuted,
-        fontSize: 10,
-        fontFamily: FONT_FAMILY,
-        anchor: "middle",
-      }) : ""}
+    </g>
     </a>`;
     })
     .join("");
@@ -65,5 +69,5 @@ export function renderMembers(members: MemberInfo[], themeRaw: unknown): string 
   ${cells}
   `.trim();
 
-  return svgRoot(W, H, content);
+  return svgRoot(W, H, content, memberStyles(visible.length));
 }

@@ -54,7 +54,6 @@ export async function cached<T>(
 export async function invalidate(key: string): Promise<void> {
   const kv = await getKV();
   if (kv) {
-    // @vercel/kv del은 별도 메서드
     const { kv: rawKv } = await import("@vercel/kv").catch(() => ({ kv: null }));
     if (rawKv) await (rawKv as { del: (k: string) => Promise<unknown> }).del(key);
   } else {
@@ -64,19 +63,20 @@ export async function invalidate(key: string): Promise<void> {
 
 /** 캐시 키 상수 */
 export const KEYS = {
-  orgInfo: "bssm:org:info",
-  members: "bssm:members",
-  activity: "bssm:activity",
-  repo: (name: string) => `bssm:repo:${name}`,
+  snapshot: "bssm:snapshot",      // GraphQL 레포 스냅샷 (30분)
+  members: "bssm:members",        // 멤버 목록 (1시간)
+  activity: "bssm:activity",      // 최근 활동 (5분)
   svg: (endpoint: string, theme: string) => `bssm:svg:${endpoint}:${theme}`,
 } as const;
 
 /** TTL 상수 (초) */
 export const TTL = {
-  banner: 3600,      // 1시간
-  stats: 900,        // 15분
-  members: 3600,     // 1시간
-  category: 1800,    // 30분
-  project: 900,      // 15분
-  activity: 300,     // 5분
+  snapshot: 1800,   // 30분 — GraphQL 레포 스냅샷
+  members: 3600,    // 1시간
+  activity: 300,    // 5분
+  // SVG 캐시는 데이터 캐시와 동일하게 맞춤
+  banner: 1800,
+  stats: 1800,
+  category: 1800,
+  project: 1800,
 } as const;

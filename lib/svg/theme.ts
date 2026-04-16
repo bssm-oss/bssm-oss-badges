@@ -51,7 +51,9 @@ export const LANGUAGE_COLORS: Record<string, string> = {
   Dockerfile: "#384d54",
 };
 
-export function langColor(lang: string | null): string {
+/** GitHub에서 받아온 languageColor 우선, 없으면 하드코딩 맵 fallback */
+export function langColor(lang: string | null, githubColor?: string | null): string {
+  if (githubColor) return githubColor;
   return lang ? (LANGUAGE_COLORS[lang] ?? "#8b8b8b") : "#8b8b8b";
 }
 

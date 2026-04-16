@@ -1,22 +1,20 @@
-// Vercel Cron schedule: every 30 minutes
-// 모든 SVG 엔드포인트를 사전 호출해서 캐시 워밍
+// 캐시 워밍 엔드포인트 — 필요 시 수동 호출
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getOrgInfo, getMembers, getRecentActivity, getRepos } from "../lib/github.js";
+import { fetchSnapshot, getMembers, getRecentActivity } from "../lib/github.js";
 import { cached, KEYS, TTL } from "../lib/cache.js";
-import { CATEGORIES } from "../lib/data/categories.js";
 
 export default async function handler(_req: VercelRequest, res: VercelResponse) {
   const results: Record<string, string> = {};
 
-  // 1. org info
+  // 1. GraphQL 스냅샷
   try {
-    await cached(KEYS.orgInfo, TTL.banner, getOrgInfo);
-    results["orgInfo"] = "ok";
+    await cached(KEYS.snapshot, TTL.snapshot, fetchSnapshot);
+    results["snapshot"] = "ok";
   } catch (e) {
-    results["orgInfo"] = String(e);
+    results["snapshot"] = String(e);
   }
 
-  // 2. members
+  // 2. 멤버
   try {
     await cached(KEYS.members, TTL.members, getMembers);
     results["members"] = "ok";
@@ -24,24 +22,12 @@ export default async function handler(_req: VercelRequest, res: VercelResponse) 
     results["members"] = String(e);
   }
 
-  // 3. activity
+  // 3. 활동
   try {
     await cached(KEYS.activity, TTL.activity, () => getRecentActivity(10));
     results["activity"] = "ok";
   } catch (e) {
     results["activity"] = String(e);
-  }
-
-  // 4. category repos
-  for (const [cat, def] of Object.entries(CATEGORIES)) {
-    try {
-      await cached(`bssm:repos:category:${cat}`, TTL.category, () =>
-        getRepos(def.repos),
-      );
-      results[`category:${cat}`] = "ok";
-    } catch (e) {
-      results[`category:${cat}`] = String(e);
-    }
   }
 
   res.status(200).json({ warmed: results, at: new Date().toISOString() });
