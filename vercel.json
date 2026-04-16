@@ -1,12 +1,7 @@
 {
-  "functions": {
-    "api/**/*.ts": {
-      "runtime": "nodejs20.x"
-    }
-  },
-"headers": [
+  "headers": [
     {
-      "source": "/api/(.*).svg",
+      "source": "/api/(.*)\\.svg",
       "headers": [
         {
           "key": "Content-Type",
